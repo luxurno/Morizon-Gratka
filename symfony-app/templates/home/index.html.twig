@@ -9,6 +9,56 @@
             margin-top: 30px;
             justify-content: center;
         }
+
+        .filters-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 0 auto 25px;
+            max-width: 1240px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .filters-grid input {
+            width: 100%;
+            border: 1px solid #d8dbe7;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .filters-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filters-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filters-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .filters-btn.secondary {
+            background: #eceffd;
+            color: #3f4da6;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
         
         .photo-card {
             background: white;
@@ -153,6 +203,20 @@
 {% endblock %}
 
 {% block body %}
+    <form method="get" action="{{ path('home') }}" class="filters-panel">
+        <div class="filters-grid">
+            <input type="text" name="location" placeholder="location" value="{{ filters.location|default('') }}">
+            <input type="text" name="camera" placeholder="camera" value="{{ filters.camera|default('') }}">
+            <input type="text" name="description" placeholder="description" value="{{ filters.description|default('') }}">
+            <input type="date" name="taken_at" placeholder="taken_at" value="{{ filters.taken_at|default('') }}">
+            <input type="text" name="username" placeholder="username" value="{{ filters.username|default('') }}">
+        </div>
+        <div class="filters-actions">
+            <button type="submit" class="filters-btn primary">Filtruj</button>
+            <a href="{{ path('home') }}" class="filters-btn secondary">Wyczyść</a>
+        </div>
+    </form>
+
     {% if photos|length > 0 %}
         <div class="photo-grid">
             {% for photo in photos %}

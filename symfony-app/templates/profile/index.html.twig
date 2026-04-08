@@ -145,6 +145,57 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+        .phoenix-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .phoenix-title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .phoenix-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .phoenix-input {
+            flex: 1 1 280px;
+            min-width: 280px;
+            padding: 12px 14px;
+            border: 1px solid #d7dbe8;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .phoenix-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .phoenix-btn:hover {
+            opacity: 0.9;
+        }
+
+        .phoenix-btn.save {
+            background: #667eea;
+        }
+
+        .phoenix-btn.import {
+            background: #764ba2;
+            margin-top: 12px;
+        }
     </style>
 {% endblock %}
 
@@ -202,6 +253,27 @@
                 <div class="stat-number">{{ user.photos|length }}</div>
                 <div class="stat-label">Photos</div>
             </div>
+        </div>
+
+        <div class="phoenix-section">
+            <div class="phoenix-title">PhoenixApi import</div>
+
+            <form method="post" action="{{ path('profile_save_phoenix_token') }}">
+                <div class="phoenix-row">
+                    <input
+                        class="phoenix-input"
+                        type="text"
+                        name="phoenix_token"
+                        value="{{ user.phoenixApiToken|default('') }}"
+                        placeholder="Wpisz token dostępu do PhoenixApi"
+                    >
+                    <button class="phoenix-btn save" type="submit">Zapisz token</button>
+                </div>
+            </form>
+
+            <form method="post" action="{{ path('profile_import_photos') }}">
+                <button class="phoenix-btn import" type="submit">Importuj zdjęcia</button>
+            </form>
         </div>
         
         <div style="text-align: center;">

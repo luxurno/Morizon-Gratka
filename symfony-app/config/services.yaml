@@ -7,3 +7,9 @@ services:
         resource: '../src/'
         exclude:
             - '../src/Kernel.php'
+
+    _instanceof:
+        App\SharedKernel\CommandHandler\CommandHandlerInterface:
+            tags:
+              - { name: messenger.message_handler, bus: command.bus }
+

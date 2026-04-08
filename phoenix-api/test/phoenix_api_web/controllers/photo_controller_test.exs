@@ -1,11 +1,14 @@
 defmodule PhoenixApiWeb.PhotoControllerTest do
   use PhoenixApiWeb.ConnCase
 
+  alias PhoenixApi.RateLimiter
   alias PhoenixApi.Repo
   alias PhoenixApi.Accounts.User
   alias PhoenixApi.Media.Photo
 
   setup do
+    RateLimiter.reset!()
+
     user =
       %User{}
       |> User.changeset(%{api_token: "valid_test_token_123"})
@@ -134,6 +137,70 @@ defmodule PhoenixApiWeb.PhotoControllerTest do
       response = json_response(conn, 200)
       assert length(response["photos"]) == 1
       assert Enum.at(response["photos"], 0)["photo_url"] == "https://example.com/photo3.jpg"
+    end
+
+    test "returns 429 when per-user rate limit is exceeded", %{conn: conn} do
+      for _ <- 1..5 do
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "valid_test_token_123")
+        |> get("/api/photos")
+        |> json_response(200)
+      end
+
+      response =
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "valid_test_token_123")
+        |> get("/api/photos")
+        |> json_response(429)
+
+      assert response == %{
+               "errors" => %{
+                 "detail" => "User import limit exceeded: max 5 requests per 10 minutes"
+               }
+             }
+    end
+
+    test "returns 429 when global rate limit is exceeded", %{conn: conn} do
+      Application.put_env(:phoenix_api, PhoenixApi.RateLimiter, global_limit: 3, user_limit: 10)
+      on_exit(fn -> Application.delete_env(:phoenix_api, PhoenixApi.RateLimiter) end)
+      RateLimiter.reset!()
+
+      first_user =
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "valid_test_token_123")
+        |> get("/api/photos")
+
+      second_user =
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "other_user_token_456")
+        |> get("/api/photos")
+
+      third_user =
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "valid_test_token_123")
+        |> get("/api/photos")
+
+      assert json_response(first_user, 200)
+      assert json_response(second_user, 200)
+      assert json_response(third_user, 200)
+
+      response =
+        conn
+        |> recycle()
+        |> put_req_header("access-token", "valid_test_token_123")
+        |> get("/api/photos")
+        |> json_response(429)
+
+      assert response == %{
+               "errors" => %{
+                 "detail" => "Global import limit exceeded: max 1000 requests per hour"
+               }
+             }
     end
   end
 end
